@@ -17,6 +17,7 @@ class OwnerOrSuperuserRequiredMixin(UserPassesTestMixin):
 
 
 class SenderOrSuperuserMixin(UserPassesTestMixin):
+
     def test_func(self):
         obj = self.get_object()
         return self.request.user == obj.ad_sender.owner or self.request.user.is_superuser
