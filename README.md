@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# django_barter
-=======
 # Django_Barter
 
 
