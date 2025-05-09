@@ -1,0 +1,37 @@
+{% extends 'users/base.html' %}
+{% block content %}
+
+<div class="container">
+    <main>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-5">
+
+                <div class="col-md-7 col-lg-8">
+
+                    <h4 class="mb-3">{% if object %}
+                            Редактирование
+                            {% else %}
+                            Создание
+                            {% endif%}</h4>
+                    <form class="needs-validation" novalidate>
+                        {{ form.as_p }}
+
+                        <hr class="my-4">
+
+                        <button class="w-100 btn btn-primary btn-lg" type="submit">
+                            {% if object %}
+                            Сохранить
+                            {% else %}
+                            Создать
+                            {% endif%}
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </form>
+    </main>
+</div>
+
+{% endblock %}

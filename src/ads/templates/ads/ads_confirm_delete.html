@@ -1,0 +1,23 @@
+{% extends 'users/base.html' %}
+{% block content %}
+<div class="container">
+    <main>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-5">
+                <div class="col-md-7 col-lg-8">
+                    <h4 class="mb-3">Удаление</h4>
+                    <form class="needs-validation" novalidate>
+
+                        <hr class="my-4">
+                        <p>Вы действительно хотите удалить?</p>
+
+                        <button class="btn btn-danger btn-lg" type="submit">Удалить</button>
+                        <a href="{% url 'ads:ads-list' %}" class="btn btn-warning">Отмена</a>
+                    </form>
+                </div>
+            </div>
+        </form>
+    </main>
+</div>
+{% endblock %}

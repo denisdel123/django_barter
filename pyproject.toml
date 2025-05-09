@@ -1,0 +1,23 @@
+[project]
+name = "django-barter"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "denisbelenko",email = "denis_belenko@mail.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django (>=5.2,<6.0)",
+    "pillow (>=11.2.1,<12.0.0)",
+    "psycopg2 (>=2.9.10,<3.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
+]
+
+[tool.poetry]
+packages = [{include = "django_barter", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

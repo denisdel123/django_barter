@@ -1,0 +1,100 @@
+{% extends 'users/base.html' %}
+{% block content %}
+
+<div class="my-3 p-3 bg-body rounded shadow-sm">
+
+    <form method="get" class="d-flex gap-2 mb-3">
+
+        <select name="ad_receiver" class="form-select">
+            <option value="">Все получатели</option>
+            {% for cat in ad_receivers %}
+            <option value="{{ cat.id }}" {% if request.GET.ad_receiver == cat.id|stringformat:"s" %}selected{% endif %}>
+            {{ cat.ad_receiver.owner }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="ad_sender" class="form-select">
+            <option value="">Все отправители</option>
+            {% for cat in ad_senders %}
+            <option value="{{ cat.id }}" {% if request.GET.ad_sender == cat.id|stringformat:"s" %}selected{% endif %}>
+            {{ cat.ad_sender.owner }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="status" class="form-select">
+            <option value="">Все статусы</option>
+            {% for key, label in statuses %}
+            <option value="{{ key }}" {% if request.GET.status == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="btn btn-primary">Найти</button>
+    </form>
+    <h6 class="border-bottom pb-2 mb-0">Предложения</h6>
+
+
+    {% for object in object_list %}
+    <div class="d-flex text-body-secondary pt-3">
+
+        <div class="pb-3 mb-0 small lh-sm border-bottom w-100">
+            <div class="d-flex justify-content-between">
+                <strong class="text-gray-dark">Инициатор: {{ object.ad_sender.owner }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <strong class="text-gray-dark">Получатель: {{ object.ad_receiver.owner }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <strong class="text-gray-dark">Получу: {{ object.ad_sender }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <strong class="text-gray-dark">Отдам: {{ object.ad_receiver }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <strong class="text-gray-dark">Комментарий: {{ object.comment }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <strong class="text-gray-dark">Фото: {{ object.status }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <strong class="text-gray-dark">Дата публикации: {{ object.created_at.date }}</strong>
+            </div>
+        </div>
+
+        <div>
+            {% if user == object.ad_sender.owner or user.is_superuser %}
+            <a href="{% url 'ads:offer-delete' object.pk %}"
+               class="btn btn-lg btn-block btn-outline-primary">удалить</a>
+            {% else %}
+            <a href="{% url 'ads:offer-reject' object.pk %}"
+               class="btn btn-lg btn-block btn-outline-primary">Отменить</a>
+            <a href="{% url 'ads:offer-accept' object.pk %}"
+               class="btn btn-lg btn-block btn-outline-primary">Принять</a>
+            {% endif %}
+
+        </div>
+        <div class="d-flex justify-content-end"></div>
+    </div>
+    {% endfor%}
+</div>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; первая</a>
+            <a href="?page={{ page_obj.previous_page_number }}">назад</a>
+        {% endif %}
+
+        <span class="current">
+            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">вперёд</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">последняя &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+{% endblock %}
