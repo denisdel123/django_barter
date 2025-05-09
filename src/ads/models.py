@@ -36,7 +36,7 @@ class Ads(models.Model):
         related_name="ads"
     )
     condition = models.CharField(
-        max_length=constants.MAX_LENGTH_CHOICES,
+        max_length=constants.MAX_LENGTH_COMMENT,
         choices=enums.ConditionEnums.choices,
         verbose_name="Состояние"
     )
@@ -77,7 +77,7 @@ class ExchangeProposal(models.Model):
         related_name="received_exchange_proposals"
     )
     comment = models.CharField(
-        max_length=constants.MAX_LENGTH_CHOICES,
+        max_length=constants.MAX_LENGTH_COMMENT,
         verbose_name="Комментарий",
         **constants.NULLABLE
     )
