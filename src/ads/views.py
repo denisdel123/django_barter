@@ -1,12 +1,13 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
 import ads.models as ads_models
 import ads.forms as ads_forms
 import core.enums
 from core import mixins
-from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
 
 
@@ -71,14 +72,25 @@ class ExchangeProposalCreateView(LoginRequiredMixin, generic.CreateView):
     template_name = 'ads/ads_form.html'
     success_url = reverse_lazy('ads:ads-list')
 
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            self.ad_receiver = ads_models.Ads.objects.get(pk=kwargs['pk'])
+        except ads_models.Ads.DoesNotExist:
+            raise Http404("Ad not found")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
     def form_valid(self, form):
-        ad_receiver = ads_models.Ads.objects.get(pk=self.kwargs['pk'])
-        form.instance.ad_receiver = ad_receiver
+        # ❗ Проверка на попытку обмена своим же объявлением
+        if self.ad_receiver.owner == self.request.user:
+            form.add_error(None, "Нельзя обменивать свои собственные объявления.")
+            return self.form_invalid(form)
+
+        form.instance.ad_receiver = self.ad_receiver
         return super().form_valid(form)
 
 
@@ -109,15 +121,8 @@ class ExchangeProposalListView(LoginRequiredMixin, generic.ListView):
 
         context["statuses"] = core.enums.StatusEnums.choices
 
-        # context["ad_senders"] = ads_models.Ads.objects.filter(
-        #     sent_exchange_proposals__ad_sender__owner=user
-        # ).distinct()
-        #
-        # context["ad_receivers"] = ads_models.Ads.objects.filter(
-        #     received_exchange_proposals__ad_receiver__owner=user
-        # ).distinct()
-        context["ad_receivers"] = ads_models.ExchangeProposal.objects.filter(ad_sender__owner=user) # кому я отправил
-        context["ad_senders"] = ads_models.ExchangeProposal.objects.filter(ad_receiver__owner=user) # кто мне отправил
+        context["ad_receivers"] = ads_models.ExchangeProposal.objects.filter(ad_sender__owner=user)  # кому я отправил
+        context["ad_senders"] = ads_models.ExchangeProposal.objects.filter(ad_receiver__owner=user)  # кто мне отправил
 
         return context
 
@@ -125,9 +130,11 @@ class ExchangeProposalListView(LoginRequiredMixin, generic.ListView):
 class ExchangeProposalDeleteView(LoginRequiredMixin, mixins.SenderOrSuperuserMixin, generic.DeleteView):
     model = ads_models.ExchangeProposal
     template_name = "ads/ads_confirm_delete.html"
-    success_url = reverse_lazy("ads:exchangeproposal_list.html")
+    success_url = reverse_lazy("ads:offer-list")
+    raise_exception = True
 
 
+@login_required
 def exchange_proposal_accept(request, pk):
     proposal = get_object_or_404(ads_models.ExchangeProposal, pk=pk)
     proposal.status = core.enums.StatusEnums.ACCEPTED
@@ -135,6 +142,7 @@ def exchange_proposal_accept(request, pk):
     return redirect("ads:offer-list")
 
 
+@login_required
 def exchange_proposal_reject(request, pk):
     proposal = get_object_or_404(ads_models.ExchangeProposal, pk=pk)
     proposal.status = core.enums.StatusEnums.REJECTED
